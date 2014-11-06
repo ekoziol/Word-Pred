@@ -31,4 +31,5 @@ selectedData <- gsub(paste(profanity, collapse='|'), " ", selectedData)
 zdata <- Corpus(VectorSource(selectedData), readerControl = list(language="en_US"))
 zdata <- tm_map(zdata, stripWhitespace)
 zdata <- tm_map(zdata, content_transformer(tolower))
+zToken <- DocumentTermMatrix(zdata)
 
