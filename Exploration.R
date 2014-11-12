@@ -30,3 +30,5 @@ qplot(bins, test$freq, test)
 zTokenColSum <- col_sums(zToken)
 freq <- sort(table(paste(zTokenColSum, zTokenColSum)), decreasing = T)
 freqProb <- freq/sum(freq)
+
+##grep out all language then use bi-gram and tri-gram probabilties
