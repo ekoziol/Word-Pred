@@ -3,6 +3,7 @@ set.seed(42)
 
 require(tm)
 require(openNLP)
+require(RWeka)
 #load in the english blog data
 data_blogs = readLines("Raw_Data/en_US/en_US.blogs.txt")
 data_twitter=readLines("Raw_Data/en_US/en_US.twitter.txt")
@@ -15,8 +16,12 @@ SampleData <- function(dataset, rate)
 }
 
 
+Tokenizer <- function(x) NGramTokenizer(x, Weka_control(min = 3, max = 3))
+
 selectedData <- c(SampleData(data_blogs, 0.1),SampleData(data_twitter, 0.1),SampleData(data_news, 0.1))
-selectedData <- gsub("[^a-zA-Z ]", " ", selectedData)
+selectedData <- gsub("[^a-zA-Z ]", "", selectedData)
+#sub with space vs without space
+#selectedData <- gsub("[^a-zA-Z ]", " ", selectedData)
 remove(data_blogs, data_news, data_twitter)
 
 #load profanity filter
@@ -28,7 +33,10 @@ selectedData <- gsub(paste(profanity, collapse='|'), " ", selectedData)
 
 #zdata  <- Corpus(DirSource("D:/Github/SwiftKey_Prediction/Raw_Data/en_US/", encoding="UTF-8"), readerControl = list(language="en_US"))
 
-zdata <- Corpus(VectorSource(selectedData), readerControl = list(language="en_US"))
+zdata <- VCorpus(VectorSource(selectedData), readerControl = list(language="en_US"))
 zdata <- tm_map(zdata, stripWhitespace)
 zdata <- tm_map(zdata, content_transformer(tolower))
-zToken <- DocumentTermMatrix(zdata)
+zToken <- DocumentTermMatrix(zdata, list(tokenize = Tokenizer))
+#save(zToken, file = zTokenTriGramOnly.RData)
+save(zdata, file = zdata.RData)
+#need to use log probabilities for adding

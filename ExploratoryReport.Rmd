@@ -1,0 +1,40 @@
+#Exploration of Text Prediction Data
+##Eric Koziol
+
+```{r, cache=TRUE, warning = FALSE, message=FALSE, echo=FALSE}
+require(tm)
+require(openNLP)
+require(RWeka)
+
+data_blogs = readLines("Raw_Data/en_US/en_US.blogs.txt")
+data_twitter=readLines("Raw_Data/en_US/en_US.twitter.txt")
+data_news=readLines("Raw_Data/en_US/en_US.news.txt")
+load(eCorp.RData)
+```
+
+##Summary
+This document explores the available data to us in our quest to create a predictive text app.  We have over **`r length(data_twitter) + length(data_blogs) + length(data_blogs)`** different text documents at our disposal.
+
+##Initial Data
+The data received is in the form of three English text corpora.  The first corpus contains data from twitter, the second data from various blogs and the third from various news sources.  The number of entries within each corpus can be viewed in the table below:
+
+Corpus  | Number of Entries
+--------|------------------
+Twitter | `r length(data_twitter)`
+Blogs   | `r length(data_blogs)`
+News    | `r length(data_blogs)`
+
+
+###Twitter
+
+###Blogs
+
+###News
+
+##Future Steps
+Based on this data the following will be performed in order to create a text prediction software:
+1.  Convert rare words to <UNK> tag.  This will be used to interpret words that have not been seen before.
+2.  Convert the data to n-grams for further processing.
+3.  Create probabilty tables for the n-grams.
+4.  Build prediction algorithms based on Markov Chaining of conditional probabilities of sentences.  Use perplexity to measure the effects of different smoothing.
+5.  After an algorithm has been successfully accepted, an application for users to enter data and use predictions will be created.
