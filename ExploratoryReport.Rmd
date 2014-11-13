@@ -9,7 +9,27 @@ require(RWeka)
 data_blogs = readLines("Raw_Data/en_US/en_US.blogs.txt")
 data_twitter=readLines("Raw_Data/en_US/en_US.twitter.txt")
 data_news=readLines("Raw_Data/en_US/en_US.news.txt")
-load(eCorp.RData)
+#load(eCorp.RData)
+profanity <- read.csv("ProfanityWords.csv", header=FALSE)
+profanity <- profanity$V1
+
+scrubData <- function(x){
+  x <- gsub("[^a-zA-Z ]", "", x)
+  x <- gsub(paste(profanity, collapse='|'), " ", x)
+  x <- strsplit(x," ")
+  
+  
+  return(x)
+}
+
+#s_news <- scrubData(data_news)
+#s_news <- unlist(s_news)
+#s_news_freq <- sort(table(paste(s_news, s_news)), decreasing = T)
+#s_news_freq_num <- c()
+#s_news_freq <- as.integer(s_news_freq)
+#for(b in names(s_news_freq)){s_news_freq_num <- c(s_news_freq_num, s_news_freq[b])}
+#quantile(s_news_freq, c(0.1, 0.25, 0.5, 0.75, 0.9))
+#qplot(log(s_news_freq)) + geom_vline(xintercept = log(quantile(s_news_freq, c(0.1, 0.25, 0.5, 0.75, 0.9))[3]), color = "blue",linetype = "longdash") + geom_vline(xintercept = log(quantile(s_news_freq, c(0.1, 0.25, 0.5, 0.75, 0.9))[1]), color = "red", linetype = "longdash") + annotate("text",  x= log(3), y = sum(s_news_freq > 2), label = "50% threshold")
 ```
 
 ##Summary
@@ -26,6 +46,7 @@ News    | `r length(data_blogs)`
 
 
 ###Twitter
+
 
 ###Blogs
 
