@@ -1,27 +1,36 @@
 #Exploration of Text Prediction Data
 ##Eric Koziol
 
-```{r, cache=TRUE, warning = FALSE, message=FALSE, echo=FALSE}
-require(tm)
-require(openNLP)
-require(RWeka)
-
-data_blogs = readLines("Raw_Data/en_US/en_US.blogs.txt")
-data_twitter=readLines("Raw_Data/en_US/en_US.twitter.txt")
-data_news=readLines("Raw_Data/en_US/en_US.news.txt")
-#load(eCorp.RData)
-profanity <- read.csv("ProfanityWords.csv", header=FALSE)
-profanity <- profanity$V1
-
-scrubData <- function(x){
-  x <- gsub("[^a-zA-Z ]", "", x)
-  x <- gsub(paste(profanity, collapse='|'), " ", x)
-  x <- strsplit(x," ")
-  
-  
-  return(x)
-}
-
+```{r, warning = FALSE, message=FALSE, echo=FALSE}
+# require(tm)
+# require(openNLP)
+# require(RWeka)
+library(ggplot2)
+# 
+# data_blogs <- load("data_blogs.rds")
+# data_twitter <- load("data_twitter.rds")
+# data_news <- load("data_news.rds")
+# #load(eCorp.RData)
+# profanity <- read.csv("ProfanityWords.csv", header=FALSE)
+# profanity <- profanity$V1
+# 
+# s_news_u_freq <- load("s_news_u_freq.rds")
+# s_blogs_u_freq <- load("s_blogs_u_freq.rds")
+# s_twitter_u_freq <- load("s_twitter_u_freq.rds")
+# 
+# scrubData <- function(x){
+#   x <- gsub("[^a-zA-Z ]", "", x)
+#   x <- tolower(x)
+#   x <- gsub(paste(profanity, collapse='|'), " ", x)
+#   x <- strsplit(x," ")
+#   
+#   
+#   return(x)
+# }
+# SampleData <- function(dataset, rate)
+# {
+#   return(dataset[as.logical(rbinom(length(dataset),1,rate))])
+# }
 #s_news <- scrubData(data_news)
 #s_news <- unlist(s_news)
 #s_news_freq <- sort(table(paste(s_news, s_news)), decreasing = T)
@@ -30,30 +39,66 @@ scrubData <- function(x){
 #for(b in names(s_news_freq)){s_news_freq_num <- c(s_news_freq_num, s_news_freq[b])}
 #quantile(s_news_freq, c(0.1, 0.25, 0.5, 0.75, 0.9))
 #qplot(log(s_news_freq)) + geom_vline(xintercept = log(quantile(s_news_freq, c(0.1, 0.25, 0.5, 0.75, 0.9))[3]), color = "blue",linetype = "longdash") + geom_vline(xintercept = log(quantile(s_news_freq, c(0.1, 0.25, 0.5, 0.75, 0.9))[1]), color = "red", linetype = "longdash") + annotate("text",  x= log(3), y = sum(s_news_freq > 2), label = "50% threshold")
+# selectedData_s <- scrubData(selectedData)
+# > save(selectedData_s, file="selectedData.RData")
+# > selectedData_s_u <- unlist(selectedData_s_u)
+# Error in unlist(selectedData_s_u) : object 'selectedData_s_u' not found
+# > selectedData_s_u <- unlist(selectedData_s)
+# > selectedData_s_u_freq <- sort(table(paste(selectedData_s_u, selectedData_s_u)), decreasing = T)
+# > quantile(selectedData_s_u_freq, c(0.1, 0.25, 0.5, 0.75, 0.9))
 ```
 
+
+
 ##Summary
-This document explores the available data to us in our quest to create a predictive text app.  We have over **`r length(data_twitter) + length(data_blogs) + length(data_blogs)`** different text documents at our disposal.
+This document explores the available data to us in our quest to create a predictive text app.  We have over **4,269,678** different English text documents at our disposal.  While, these data sources are inherently different types of language, they are all ways that people will use langauge.  Therefore, it is imperative that we blend these sources to full capture human expression and communication within our predictions.  However, despite this size of language, **approximately 10% of the words account for 97.5% of the total word counts.**  Therefore, we can safely discard a large portion of the words and use them as predictors of words that have not been seen before.  This fact will also allow us to sample the data effectively, thus using less memory on the future sytem.  You can find the plan to continue implementing this technology at the end of this document.
 
 ##Initial Data
-The data received is in the form of three English text corpora.  The first corpus contains data from twitter, the second data from various blogs and the third from various news sources.  The number of entries within each corpus can be viewed in the table below:
+The data received is in the form of three English text corpora.  The first corpus contains data from twitter, the second data from various blogs and the third from various news sources.  Some basic feedback and differences between the data sources can be seen in the following tables.
 
-Corpus  | Number of Entries
---------|------------------
-Twitter | `r length(data_twitter)`
-Blogs   | `r length(data_blogs)`
-News    | `r length(data_blogs)`
+Corpus  | Number of Entries|
+--------|------------------|
+Twitter | `r 2360148`      |
+Blogs   | `r 899288`       |
+News    | `r 1010242`      |
+
+Corpus  | Number of Words   |
+--------|--------------------
+Twitter | 30417180          |
+Blogs   | 37592702          |
+News    | 34626812          |
+
+Corpus  | Average Words per Entry |
+--------|-------------------------
+Twitter | `r 30417180/2360148`    |
+Blogs   | `r 37592702/899288`     |
+News    | `r 34626812/1010242`    |
+
+As you can see, there is quite a bit of difference between the various sources.  These differences can also be viewed in the following plot which compares the percentage of total words used in each corpus compared to the percentage of unique words in the corpus.
 
 
-###Twitter
+```{r, echo = FALSE, fig.width=8, fig.height=8}
+exPlot <- read.csv("exPlot.csv")
+# #exPlots <- as.numeric(exPlot)
+ggplot() + geom_line(data=exPlot, aes(x=newsP, y=newsC, color = "red")) + geom_line(data=exPlot, aes(x=blogsP, y=blogsC, color="purple")) + geom_line(data=exPlot, aes(x=twitterP, y=twitterC, color="blue")) + xlab("Percentage of Words in Corpus") + ylab("Percentage of Word Counts in Corpus") + ggtitle("Comparison of How Many Words are Required to Capture a Corpus") + scale_color_discrete(name="Corpus", labels=c("News", "Blogs", "Twitter"))
+# p <- load("countsVsWordsPlot.rds")
+# print(p)
+```
 
+As can be seen from the plot, approximately 97.5% of the total words within each corpus can be expressed with only approximately 10% of the words in each corpus.  While there are some differences between each corpus, a relatively small number of words can be leveraged to express a majority of the language.  A small dictionary of words will allow us to use less memory in the implementation of the system.
 
-###Blogs
+Additionally, we can notice some differences in the langauge used between each corpus.  Looking at the plot below, we can get of an idea of the type of english used within each corpus.  For instance, if a document contains the word "said" it is very likely to be a news source.  Where as if a document includes "your", "me", or "my" it is unlikely to be a news source.  Keep in mind that the chart below is based on the top word counts and thus should only be used as a relative measure.
 
-###News
+```{r, echo=FALSE, fig.width=10, fig.height=8}
+twDFmelt2 <- read.csv("twDFmelt2.csv")
+
+ggplot(twDFmelt2, aes(x=words, y=value, fill=variable),  color = c("green", "red", "blue")) + geom_histogram(stat="identity", position = "dodge") + xlab("Word") + ylab("Percentage of Total Usage") + scale_color_discrete(name = "Corpus", labels = c("Blogs", "News", "Twitter")) + ggtitle("Fingerprint of Corpus Based on Top Word Count")
+
+```
 
 ##Future Steps
 Based on this data the following will be performed in order to create a text prediction software:
+
 1.  Convert rare words to <UNK> tag.  This will be used to interpret words that have not been seen before.
 2.  Convert the data to n-grams for further processing.
 3.  Create probabilty tables for the n-grams.

@@ -2,6 +2,7 @@ setwd("D:/Github/SwiftKey_Prediction")
 set.seed(42)
 
 require(tm)
+
 require(openNLP)
 require(RWeka)
 require(slam)

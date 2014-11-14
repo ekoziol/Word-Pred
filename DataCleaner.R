@@ -1,4 +1,4 @@
-setwd("D:/Github/SwiftKey_Prediction")
+#setwd("D:/Github/SwiftKey_Prediction")
 set.seed(42)
 
 require(tm)
