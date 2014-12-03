@@ -67,7 +67,7 @@ tokenize <- function(text, sizeX){
 #create tokens
 unigrams <- tokenize(SD1, 1)
 unigramTable <- sort(table(unigrams), decreasing=T)
-cutoff <- quantile(unigramTable, 0.95)
+cutoff <- quantile(unigramTable, 0.95) #originally 0.95
 unigramTop <- names(unigramTable[unigramTable > cutoff])
 
 uniqueWords <- names(unigramTable)

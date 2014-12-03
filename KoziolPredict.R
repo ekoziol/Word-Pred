@@ -34,8 +34,17 @@ filterUnknownWords <- function(wordArray){
 
 createNGrams <- function(wordArray){
   ngramsToFind <- c()
-  
-  for(i in 1:length())
-  
+  wordArrayLength <- length(wordArray)
+  for(i in 1:wordArrayLength){
+    ngramsToFind <- c(ngramsToFind, paste(wordArray[i:wordArrayLength], collapse=" "))
+  }
+  return(ngramsToFind)
   
 }
+
+findTopWords <- function(ngramArray, probTable, n){
+  probTable[probTable$firstWord %in% ngramArray,]
+  
+}
+
+
