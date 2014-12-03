@@ -102,6 +102,7 @@ ngram2$lastWord <- unlist(lapply(ngramTable$ngram, findLastWord))
 
 ngram2ply <- ddply(ngram2,.(firstWord,lastWord),nrow)
 
+
 ngramToDF <- function(tokens)
 {
   ngramTable <- data.table(tokens)
