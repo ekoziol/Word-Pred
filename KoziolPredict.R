@@ -47,7 +47,7 @@ findTopWords <- function(ngramArray, probTable, n){
   
   aggWords <- aggregate(V1 ~ lastWord, data=selectedWords, sum)
   
-  aggWords <- aggWords[with(order(-V1))]
+  aggWords <- aggWords[with(aggWords, order(-V1)),]
   
   return(head(aggWords, n))
   
