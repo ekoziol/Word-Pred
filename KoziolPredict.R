@@ -43,8 +43,21 @@ createNGrams <- function(wordArray){
 }
 
 findTopWords <- function(ngramArray, probTable, n){
-  probTable[probTable$firstWord %in% ngramArray,]
+  selectedWords <- probTable[probTable$firstWord %in% ngramArray,]
+  
+  aggWords <- aggregate(V1 ~ lastWord, data=selectedWords, sum)
+  
+  aggWords <- aggWords[with(order(-V1))]
+  
+  return(head(aggWords, n))
   
 }
 
+predictThis <- function(phrase){
+  pred <- parseString(phrase)
+  pred <- filterUnknownWords(pred)
+  pred <- createNGrams(pred)
+  pred <- findTopWords(pred, ProbabilityTable, 10)
+  return(pred)
+}
 
