@@ -1,6 +1,6 @@
 set.seed(42) #<- choose wisely!
-
-#library(stylo)
+library(plyr)
+library(stylo)
 
 data_blogs = readLines("Raw_Data/en_US/en_US.blogs.txt")
 data_twitter=readLines("Raw_Data/en_US/en_US.twitter.txt")
@@ -24,6 +24,7 @@ SD1 <- tolower(SD)
 SD1 <- gsub(paste(profanity, collapse='|'), " ", SD1)
 #collapse all ' to join words
 SD1 <- gsub("'", "", SD1)
+SD1 <- gsub("-", "", SD1)
 #turn all characters not in the alphabet or a space into a space
 SD1 <- gsub("[^a-z ]", " ", SD1) 
 #collapse all multiple spaces into one space
@@ -63,11 +64,27 @@ tokenize <- function(text, sizeX){
 
 #######################
 
-#set play text
-catHat <- "the cat in the hat was a fat cat in the hat on the mat"
-
 #create tokens
-size2 <- tokenize(SD1, 2)
+unigrams <- tokenize(SD1, 1)
+unigramTable <- sort(table(unigrams), decreasing=T)
+cutoff <- quantile(unigramTable, 0.95)
+unigramTop <- names(unigramTable[unigramTable > cutoff])
+
+uniqueWords <- names(unigramTable)
+save(uniqueWords, file="uniqueWords.rds")
+
+SD2 <- SD1
+
+for(i in 1:length(SD2)){
+  temp <- strsplit(SD2[i], " ")
+  temp[[1]][!(temp[[1]] %in% unigramTop)] <- "<UNK>"
+  SD2[i] <- paste(temp[[1]], collapse = " ")
+}
+
+
+size2 <- tokenize(SD2, 2)
+size3 <- tokenize(SD2, 3)
+size4 <- tokenize(SD2, 4)
 
 #create data.table with all tokens
 ngramTable <- data.table(size2)
@@ -79,6 +96,44 @@ setnames(ngram2, "V1", "firstWord")
 ngram2$lastWord <- unlist(lapply(ngramTable$ngram, findLastWord))
 
 #create word frequency table from ngram2
-theTable <- table(ngram2)
-theTable <- sweep(theTable, 1, rowSums(theTable), "/")
+# theTable <- table(ngram2)
+# theTable <- sweep(theTable, 1, rowSums(theTable), "/")
 #print(theTable)
+
+ngram2ply <- ddply(ngram2,.(firstWord,lastWord),nrow)
+
+ngramToDF <- function(tokens)
+{
+  ngramTable <- data.table(tokens)
+  setnames(ngramTable, names(ngramTable)[1], "ngram")
+  
+  ngram <- data.table(unlist(lapply(ngramTable$ngram, findFirstWord)))
+  setnames(ngram, "V1", "firstWord")
+  ngram$lastWord <- unlist(lapply(ngramTable$ngram, findLastWord))
+  
+  ngramply <- ddply(ngram,.(firstWord,lastWord),nrow)
+  
+  return(ngramply)
+}
+
+ngram3ply <- ngramToDF(size3)
+ngram4ply <- ngramToDF(size4)
+
+ngrams <- rbind(ngram2ply, ngram3ply)
+ngrams <- rbind(ngrams, ngram4ply)
+ngrams <- ngrams[!(ngrams$lastWord == "<unk>"),]
+##
+# size4 <- tokenize(SD1, 4)
+# ngramTable4 <- data.table(size4)
+# setnames(ngramTable4,"ngram")
+# ngram4 <- data.table(unlist(lapply(ngramTable4$ngram, findFirstWord)))
+# setnames(ngram4, "V1", "firstWord")
+# ngram4$lastWord <- unlist(lapply(ngramTable4$ngram, findLastWord))
+# ngram4ply <- ddply(ngram4,.(firstWord,lastWord),nrow)
+
+# for(i in 1:length(sdTest)){
+#   temp <- strsplit(sdTest[i], " ")
+#   temp[[1]][!(temp[[1]] %in% words)] <- "<UNK>"
+#   sdTest[i] <- paste(temp[[1]], collapse = " ")
+# }
+

@@ -55,3 +55,7 @@ ngram2$lastWord <- unlist(lapply(ngramTable$ngram, findLastWord))
 theTable <- table(ngram2)
 theTable <- sweep(theTable, 1, rowSums(theTable), "/")
 print(theTable)
+
+library(plyr)
+ngram2ply <- ddply(ngram2,.(firstWord,lastWord),nrow)
+print(ngram2ply)
