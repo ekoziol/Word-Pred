@@ -54,10 +54,18 @@ findTopWords <- function(ngramArray, probTable, n){
 }
 
 predictThis <- function(phrase){
-  pred <- parseString(phrase)
-  pred <- filterUnknownWords(pred)
-  pred <- createNGrams(pred)
-  pred <- findTopWords(pred, ProbabilityTable, 10)
+  tryCatch({
+    pred <- parseString(phrase)
+    pred <- filterUnknownWords(pred)
+    pred <- createNGrams(pred)
+    pred <- findTopWords(pred, ProbabilityTable, 10)
+  },
+    warning = function(e){
+      pred <- parseString("<unk> <unk> <unk> <unk>")
+      pred <- filterUnknownWords(pred)
+      pred <- createNGrams(pred)
+      pred <- findTopWords(pred, ProbabilityTable, 10)
+  })
   return(pred)
 }
 
