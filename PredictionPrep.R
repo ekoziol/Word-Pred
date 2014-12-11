@@ -123,6 +123,24 @@ ngram4ply <- ngramToDF(size4)
 ngrams <- rbind(ngram2ply, ngram3ply)
 ngrams <- rbind(ngrams, ngram4ply)
 ngrams <- ngrams[!(ngrams$lastWord == "<unk>"),]
+
+for(w in unique(ngrams$firstWord)){
+  wsplit <- strsplit(w, " ")
+  wordFactor <- 1
+  if(length(wsplit) == 1){
+    wordFactor <- 0.1
+  }
+  else if(length(wsplit) == 2){
+    wordFactor <- 0.3
+  }
+  else{
+    wordFactor <- 0.6
+  }
+  
+  ngrams[ngrams$firstWord == w, "V1"] <- log(wordFactor * ngrams[ngrams$firstWord == w, "V1"] /  sum(ngrams[ngrams$firstWord == w, "V1"]))
+}
+
+save(ngrams, file = "ProbabilityTable.rds")
 ##
 # size4 <- tokenize(SD1, 4)
 # ngramTable4 <- data.table(size4)
