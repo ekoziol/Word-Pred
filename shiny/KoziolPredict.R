@@ -2,8 +2,7 @@ library(data.table)
 
 load("ProbabilityTable.rds")
 load("uniqueWords.RData")
-profanity <- read.csv("ProfanityWords.csv", header=FALSE)
-profanity <- profanity$V1
+load("profanity.rds")
 
 parseString <- function(thePhrase){
   SD1 <- tolower(thePhrase)
