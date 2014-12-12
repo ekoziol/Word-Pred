@@ -12,7 +12,10 @@ shinyUI(pageWithSidebar(
   ),
   mainPanel(
     h3('Begin Typing in the Box Below'),
-    tags$textarea(id="userText", rows=10, cols=2000, ""),
-    tags$textarea(id="topSelection", rows=10, cols=2000, "")
+    textInput("userText", "",""),
+    textOutput("firstWord"),
+    textOutput("secondWord"),
+    textOutput("thirdWord"),
+    textOutput("otherWords")
   )
 ))
